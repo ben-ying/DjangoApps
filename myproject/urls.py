@@ -25,5 +25,6 @@ urlpatterns = [
     path('photo/', include('photo.urls')),
     path('iaer/', include('iaer.urls')),
     path('tools/', include('tools.urls')),
+    path('study/', include('study.urls')),
     path('', include('iaer.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

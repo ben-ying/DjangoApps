@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'photo.apps.PhotoConfig',
     'iaer.apps.IaerConfig',
     'tools.apps.ToolsConfig',
+    'study.apps.StudyConfig',
     'rest_framework',
     'rest_framework.authtoken',
     'django_extensions', # https://django-extensions.readthedocs.io/en/latest/installation_instructions.html
