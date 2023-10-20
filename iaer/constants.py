@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 MIN_PASSWORD_LEN = 6
 VERIFY_CODE_EXPIRED_TIME = 5 * 60 # 5 minutes
