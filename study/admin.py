@@ -4,7 +4,7 @@ from .models import Question
 from .models import Exam
 
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'grade', 'subject', 'title', 'description_above_image', 'image', 'description_below_image', 'classroom_exercises', 'score', 'number_of_errors', 'category', 'fixed', 'exam_name', 'creator', 'created', 'modified')
+    list_display = ('id', 'grade', 'subject', 'title', 'description_above_image', 'image', 'description_below_image', 'classroom_exercises', 'score', 'number_of_errors', 'category', 'fixed', 'exam_name', 'creator', 'released', 'created', 'modified')
     search_fields = ('grade', 'subject', 'title', 'description_above_image', 'description_below_image', 'classroom_exercises', 'score', 'number_of_errors', 'category', 'exam_name', 'creator')
 admin.site.register(Question, QuestionAdmin)
 

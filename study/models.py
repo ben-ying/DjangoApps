@@ -10,25 +10,25 @@ class Question(models.Model):
     CATEGORY_CHOICES = (
         (1, _('未分类')),
         (2, _('算术')),
-        (3, _('看图说话')),
+        (3, _('看图填数')),
         (4, _('比大小')),
     )
     grade = models.PositiveSmallIntegerField(default=1, verbose_name='年级')
-    subject = models.CharField(max_length=30, choices = SUBJECT_CHOICES, default=1, verbose_name='学科')
+    subject = models.PositiveSmallIntegerField(max_length=30, choices = SUBJECT_CHOICES, default=1, verbose_name='学科')
     title = models.CharField(max_length=50, blank=True, null=True, verbose_name='标题')
-    description_above_image = models.CharField(max_length=1024, blank=True, null=True, verbose_name='图片上方描述')
+    description_above_image = models.TextField(max_length=1024, blank=True, null=True, verbose_name='图片上方描述')
     image = models.ImageField(upload_to ='study_images/% Y/% m/% d/', blank=True, null=True, verbose_name='图片')
-    description_below_image = models.CharField(max_length=1024, blank=True, null=True, verbose_name='图片下方描述')
+    description_below_image = models.TextField(max_length=1024, blank=True, null=True, verbose_name='图片下方描述')
     classroom_exercises = models.BooleanField(default=True,  verbose_name='是否课内习题')
     score = models.PositiveSmallIntegerField(default=1, verbose_name='分数')
     number_of_errors = models.PositiveIntegerField(default=1, verbose_name='出错次数')
-    category = models.CharField(max_length=30, choices = CATEGORY_CHOICES, default=1, verbose_name='题目类型')
+    category = models.PositiveIntegerField(max_length=30, choices = CATEGORY_CHOICES, default=1, verbose_name='题目类型')
     fixed = models.BooleanField(default=True, verbose_name='是否固定题')
     exam_name = models.CharField(max_length=100, blank=True, null=True, verbose_name='出自哪个试卷')
     released = models.BooleanField(default=False, verbose_name='是否发布')
     creator = models.CharField(max_length=20, blank=True, null=True, default='ben', verbose_name='创建者')
-    created = models.DateField(editable=False, verbose_name='创建时间')
-    modified = models.DateField(auto_now=True, verbose_name='修改时间')
+    created = models.DateField(auto_now_add=True, editable=False, verbose_name='创建时间', blank=True, null=True)
+    modified = models.DateField(auto_now=True, verbose_name='修改时间', blank=True, null=True)
 
 
 class Exam(models.Model):
@@ -38,7 +38,7 @@ class Exam(models.Model):
     creator = models.CharField(max_length=20, blank=True, null=True, default='ben', verbose_name='创建者')
     score = models.PositiveSmallIntegerField(default=100, verbose_name='分数')
     reviewer = models.CharField(max_length=20, blank=True, null=True, default='ben', verbose_name='批改人')
-    created = models.DateField(editable=False, verbose_name='创建时间') 
-    modified = models.DateField(auto_now=True, verbose_name='修改时间')
+    created = models.DateField(auto_now_add=True, editable=False, verbose_name='创建时间', blank=True, null=True) 
+    modified = models.DateField(auto_now=True, verbose_name='修改时间', blank=True, null=True)
 
 
