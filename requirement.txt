@@ -39,3 +39,4 @@ django-extensions
 openpyxl
 pandas
 python-docx
+docx2txt

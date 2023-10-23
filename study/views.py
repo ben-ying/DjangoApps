@@ -1,4 +1,5 @@
 import base64
+import docx2txt
 import random
 import pandas as pd
 
@@ -12,6 +13,7 @@ from docx import Document
 from docx.shared import Pt
 from docx.oxml.ns import qn
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.shared import Inches
 from io import BytesIO
 from openpyxl import Workbook
 from openpyxl.drawing.image import Image
@@ -39,7 +41,6 @@ def index(request):
 
             for index, row in df.iterrows():
                 id = row['id']
-                print(f'id: {id}')
                 if Question.objects.filter(id=id):
                     if len(messages) < 100:
                         messages.append(f"Line {index + 2}: {_('ID已存在无法重复导入')}")
@@ -242,6 +243,18 @@ def generate_test_paper(request):
         font.italic = False
         if item.description_above_image:
             document.add_paragraph(item.description_above_image)
+        if item.image:
+            # Open the image using Pillow
+            image_path = '.' + item.image.url
+            image = PILImage.open(image_path)
+            # Get the original width and height of the image
+            original_width, original_height = image.size
+            width = 6
+            i = original_width / width
+            document.add_picture(image_path, width=Inches(width), height=Inches(original_height / i))
+
+            # pic = document.add_picture("." + item.image.url, width=Inches(5), height=Inches(3))
+            # pic.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         if item.description_below_image:
             document.add_paragraph(item.description_below_image)
         document.add_paragraph()
@@ -250,8 +263,8 @@ def generate_test_paper(request):
     
 
     # Create a response with the Word document
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-    response['Content-Disposition'] = 'attachment; filename=my_data_export.docx'
+    response = HttpResponse(content_type='application/msword')
+    response['Content-Disposition'] = 'attachment; filename=my_document.docx'
     document.save(response)
 
     return response
