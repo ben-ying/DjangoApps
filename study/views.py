@@ -3,12 +3,14 @@ import base64
 from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.drawing.image import Image
+from openpyxl.styles import Alignment
+from openpyxl.styles import Font
 from io import BytesIO
 from django.conf import settings
 
 from .models import Question
+from .utils import get_verbose_name
 from PIL import Image as PILImage
-
 
 
 def index(request):
@@ -22,43 +24,65 @@ def export_to_excel(request):
     sheet = workbook.active
 
     # Prepare data (as a list of dictionaries)
-    data = [{'年级': item.grade, '学科': item.subject, '标题': item.title, \
-            '图片上方描述': item.description_above_image, '图片': item.image, '图片下方描述': item.description_below_image, \
-            '是否课内习题': item.classroom_exercises, '分数': item.score, '出错次数': item.number_of_errors, \
-            '题目类型': item.category, '是否固定题': item.fixed, '出自哪个试卷': item.exam_name, \
-            '是否发布': item.released, '创建者': item.creator} for item in queryset]
+    data = [{get_verbose_name(item, 'grade'): item.grade, get_verbose_name(item, 'subject'): item.subject, get_verbose_name(item, 'title'): item.title, \
+            get_verbose_name(item, 'description_above_image'): item.description_above_image, get_verbose_name(item, 'image'): item.image, get_verbose_name(item, 'description_below_image'): item.description_below_image, \
+            get_verbose_name(item, 'classroom_exercises'): item.classroom_exercises, get_verbose_name(item, 'score'): item.score, get_verbose_name(item, 'number_of_errors'): item.number_of_errors, \
+            get_verbose_name(item, 'category'): item.category, get_verbose_name(item, 'fixed'): item.fixed, get_verbose_name(item, 'exam_name'): item.exam_name, \
+            get_verbose_name(item, 'released'): item.released, get_verbose_name(item, 'creator'): item.creator} for item in queryset]
+    
+    print(f'data: {list(data[0])}')
+    # Add headers and set font style
+    sheet.append(list(data[0]))
+    # Create a Font object with the desired size and bold settings
+    font = Font(size=16, bold=True)
+    # Iterate through the cells in the specified row and apply the style
+    for cell in sheet[1]:
+        cell.font = font
 
     # Process and insert images into Excel
     for row, item in enumerate(data, start=2):
-        sheet.cell(row=row, column=1, value=item['年级'])
-        sheet.cell(row=row, column=2, value=item['学科'])
-        sheet.cell(row=row, column=3, value=item['标题'])
-        cell = sheet.cell(row=row, column=4, value=item['图片上方描述'])
-        sheet.cell(row=row, column=6, value=item['图片下方描述'])
-        sheet.cell(row=row, column=7, value=item['是否课内习题'])
-        sheet.cell(row=row, column=8, value=item['分数'])
-        sheet.cell(row=row, column=9, value=item['出错次数'])
-        sheet.cell(row=row, column=10, value=item['题目类型'])
-        sheet.cell(row=row, column=11, value=item['是否固定题'])
-        sheet.cell(row=row, column=12, value=item['出自哪个试卷'])
-        sheet.cell(row=row, column=13, value=item['是否发布'])
-        sheet.cell(row=row, column=14, value=item['创建者'])
+        sheet.cell(row=row, column=1, value=item[list(item)[0]])
+        sheet.cell(row=row, column=2, value=item[list(item)[1]])
+        sheet.cell(row=row, column=3, value=item[list(item)[2]])
+        sheet.cell(row=row, column=4, value=item[list(item)[3]])
+        sheet.cell(row=row, column=6, value=item[list(item)[5]])
+        sheet.cell(row=row, column=7, value=item[list(item)[6]])
+        sheet.cell(row=row, column=8, value=item[list(item)[7]])
+        sheet.cell(row=row, column=9, value=item[list(item)[8]])
+        sheet.cell(row=row, column=10, value=item[list(item)[9]])
+        sheet.cell(row=row, column=11, value=item[list(item)[10]])
+        sheet.cell(row=row, column=12, value=item[list(item)[11]])
+        sheet.cell(row=row, column=13, value=item[list(item)[12]])
+        sheet.cell(row=row, column=14, value=item[list(item)[13]])
 
-        img = PILImage.open(item['图片'])
+        img = PILImage.open(item[list(item)[4]]) # image
         # img = img.resize((100, 100))  # Resize the image as needed
 
         img_io = BytesIO()
         img.save(img_io, 'PNG')
 
-        img_path = f'tmp_image_{row}.png'
+        img_path = f'media/study/images/tmp_image_{row}.png'
         with open(img_path, 'wb') as f:
             f.write(img_io.getvalue())
 
         img = Image(img_path)
         sheet.add_image(img, f'E{row}') # E means column=5
 
+    for index, row in enumerate(sheet.iter_rows()):
+        # Set row height, title no need to set
+        if index != 0:
+            sheet.row_dimensions[index + 1].height = 180
+        else:
+            sheet.row_dimensions[index + 1].height = 30
+        for cell in row:
+            cell.alignment = Alignment(wrap_text=True, vertical='center', horizontal='center')
+                
+    # Set row width
+    sheet.column_dimensions['D'].width = 50 # description_above_image
+    sheet.column_dimensions['E'].width = 80 # image
+    sheet.column_dimensions['F'].width = 50 # description_above_image
     # Save the Excel file
-    workbook.save('output.xlsx')
+    workbook.save('media/study/files/output.xlsx')
     # Create a response with the Excel file
     response = HttpResponse(content_type="application/ms-excel")
     response["Content-Disposition"] = "attachment; filename=study_questions.xlsx"
@@ -67,4 +91,3 @@ def export_to_excel(request):
     workbook.save(response)
 
     return response
-

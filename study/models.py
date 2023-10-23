@@ -17,7 +17,7 @@ class Question(models.Model):
     subject = models.PositiveSmallIntegerField(max_length=30, choices = SUBJECT_CHOICES, default=1, verbose_name='学科')
     title = models.CharField(max_length=50, blank=True, null=True, verbose_name='标题')
     description_above_image = models.TextField(max_length=1024, blank=True, null=True, verbose_name='图片上方描述')
-    image = models.ImageField(upload_to ='study_images/% Y/% m/% d/', blank=True, null=True, verbose_name='图片')
+    image = models.ImageField(upload_to ='study/images', blank=True, null=True, verbose_name='图片')
     description_below_image = models.TextField(max_length=1024, blank=True, null=True, verbose_name='图片下方描述')
     classroom_exercises = models.BooleanField(default=True,  verbose_name='是否课内习题')
     score = models.PositiveSmallIntegerField(default=1, verbose_name='分数')
