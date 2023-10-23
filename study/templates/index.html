@@ -2,16 +2,16 @@
 {% block head %}
 {% endblock %}
 {% block body %}
-<h1>Import Data</h1>
+<h1>从Excel导入试题</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <label for="excel_file">Select Excel File:</label>
+        <label for="excel_file">选择Excel文件:</label>
         <input type="file" name="excel_file" id="excel_file" accept=".xlsx">
         <br>
-        <input type="submit" value="Upload and Import">
+        <input type="submit" value="上传文件">
     </form>
     <!-- Display a message if data was successfully imported -->
-    {% if message %}
+    {% for message in messages %}
         <p style="font-size: 30; color: red;">{{ message }}</p>
-    {% endif %}
+    {% endfor %}
 {% endblock %}
