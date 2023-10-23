@@ -1,4 +1,5 @@
 from .models import Question
+from pycnnum import num2cn
 
 
 def get_verbose_name(model, field_name):
@@ -17,3 +18,9 @@ def get_choice_key_by_value(choices, value):
             pass
     
     return 1
+
+def arabic_numerals_to_chinese_numerals(number):
+    if number == 1 or number == '1':
+        return '一'
+    else:
+        return num2cn(number)

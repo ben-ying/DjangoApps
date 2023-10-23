@@ -17,7 +17,7 @@ CATEGORY_CHOICES = (
 class Question(models.Model):
     grade = models.PositiveSmallIntegerField(default=1, verbose_name=_('年级'))
     subject = models.PositiveSmallIntegerField(max_length=30, choices = SUBJECT_CHOICES, default=1, verbose_name=_('学科'))
-    title = models.CharField(max_length=50, blank=True, null=True, verbose_name=_('标题'))
+    title = models.CharField(max_length=50, verbose_name=_('标题'))
     description_above_image = models.TextField(max_length=1024, blank=True, null=True, verbose_name=_('图片上方描述'))
     image = models.ImageField(upload_to ='study/images', blank=True, null=True, verbose_name=_('图片'))
     description_below_image = models.TextField(max_length=1024, blank=True, null=True, verbose_name=_('图片下方描述'))
@@ -34,6 +34,8 @@ class Question(models.Model):
 
 
 class Exam(models.Model):
+    grade = models.PositiveSmallIntegerField(default=1, verbose_name=_('年级'))
+    subject = models.PositiveSmallIntegerField(max_length=30, choices = SUBJECT_CHOICES, default=1, verbose_name=_('学科'))
     questions = models.ManyToManyField('Question', blank=True, verbose_name=_('试题'))
     name = models.CharField(max_length=50, verbose_name=_('试卷名称'))
     total_score = models.PositiveSmallIntegerField(default=100, verbose_name=_('总分'))

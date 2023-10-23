@@ -2,14 +2,18 @@
 {% block head %}
 {% endblock %}
 {% block body %}
-<h1>从Excel导入试题</h1>
+    <h1>从Excel导入试题</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <label for="excel_file">选择Excel文件:</label>
         <input type="file" name="excel_file" id="excel_file" accept=".xlsx">
         <br>
         <input type="submit" value="上传文件">
-    </form>
+    </form><br><br>
+    <h1>将数据到出到Excel</h1>
+    <button onclick="window.location.href='export-to-excel'">下载数据</button><br><br><br><br>
+    <h1>生成试卷</h1>
+    <button onclick="window.location.href='generate-test-paper?size=10&grade=1&subject=1'">下载试卷</button><br><br>
     <!-- Display a message if data was successfully imported -->
     {% for message in messages %}
         <p style="font-size: 30; color: red;">{{ message }}</p>

@@ -1,4 +1,5 @@
 import base64
+import random
 import pandas as pd
 
 from django.http import HttpResponse
@@ -7,6 +8,10 @@ from django.conf import settings
 from django.shortcuts import render
 from django.utils.translation import gettext as _
 
+from docx import Document
+from docx.shared import Pt
+from docx.oxml.ns import qn
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from io import BytesIO
 from openpyxl import Workbook
 from openpyxl.drawing.image import Image
@@ -14,9 +19,9 @@ from openpyxl.styles import Alignment
 from openpyxl.styles import Font
 from PIL import Image as PILImage
 
-from .models import Question
+from .models import Question, Exam
 from .models import SUBJECT_CHOICES, CATEGORY_CHOICES
-from .utils import get_question_verbose_name, get_choice_key_by_value
+from .utils import get_question_verbose_name, get_choice_key_by_value, arabic_numerals_to_chinese_numerals
 
 
 def index(request):
@@ -195,5 +200,58 @@ def export_to_excel(request):
 
     # Save the Excel workbook to the response
     workbook.save(response)
+
+    return response
+
+
+def generate_test_paper(request):
+    # Fetch data from the Django model
+    grade = request.GET.get('grade')
+    subject = request.GET.get('subject')
+    items = list(Question.objects.filter(grade=grade, subject=subject))
+    size = int(request.GET.get('size')) if int(request.GET.get('size')) < len(items) else len(items)
+    
+    # random items
+    random_items = random.sample(items, size)
+
+    # Create a new Word document
+    document = Document()
+    exams = Exam.objects.filter(grade=grade, subject=subject)
+
+    # Add a title to the document
+    # import pdb; pdb.set_trace()
+    heading = document.add_heading(arabic_numerals_to_chinese_numerals(grade) + \
+                                   _('年级') + SUBJECT_CHOICES[int(subject) - 1][1] + _('试题') + \
+                                    arabic_numerals_to_chinese_numerals(len(exams) + 1), 1)
+    run = heading.runs[0]
+    font = run.font
+    font.bold = True  
+    font.size = Pt(18)
+    heading.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER  # Set alignment to center
+    document.add_paragraph()
+    document.add_paragraph()
+
+    # Add data from the model to the document
+    for index, item in enumerate(random_items):
+        paragraph = document.add_paragraph()
+        run = paragraph.add_run(f"{arabic_numerals_to_chinese_numerals(index + 1)}、{item.title} ({item.score}{_('分')})")
+        font = run.font
+        font.name = '宋体'  # Set the font name
+        font.size = Pt(14)    # Set the font size
+        font.bold = True
+        font.italic = False
+        if item.description_above_image:
+            document.add_paragraph(item.description_above_image)
+        if item.description_below_image:
+            document.add_paragraph(item.description_below_image)
+        document.add_paragraph()
+        document.add_paragraph()
+        document.add_paragraph()
+    
+
+    # Create a response with the Word document
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response['Content-Disposition'] = 'attachment; filename=my_data_export.docx'
+    document.save(response)
 
     return response

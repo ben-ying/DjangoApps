@@ -35,5 +35,7 @@ oss2
 #Apache for Raspbian: sudo apt-get install apache2 libapache2-mod-wsgi
 
 django-extensions
-# export to excel
+# excel
 openpyxl
+pandas
+python-docx
