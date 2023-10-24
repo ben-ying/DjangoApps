@@ -41,12 +41,6 @@ def index(request):
 
             for index, row in df.iterrows():
                 id = row['id']
-                if Question.objects.filter(id=id):
-                    if len(messages) < 100:
-                        messages.append(f"Line {index + 2}: {_('ID已存在无法重复导入')}")
-                    elif len(messages) < 101:
-                        messages.append(f"......")
-                    continue
                 grade = row[get_question_verbose_name('grade')]
                 subject = get_choice_key_by_value(SUBJECT_CHOICES, row[get_question_verbose_name('subject')]) # value to key
                 title = row[get_question_verbose_name('title')]
@@ -58,8 +52,17 @@ def index(request):
                 category = get_choice_key_by_value(CATEGORY_CHOICES, row[get_question_verbose_name('category')]) # value to key
                 fixed = row[get_question_verbose_name('fixed')]
                 exam_name = row[get_question_verbose_name('exam_name')]
+                exam_times = row[get_question_verbose_name('exam_times')]
+                md5_value = row[get_question_verbose_name('md5_value')]
                 released = row[get_question_verbose_name('released')]
                 creator = row[get_question_verbose_name('creator')]
+
+                if Question.objects.filter(id=id) or Question.objects.filter(md5_value=md5_value):
+                    if len(messages) < 100:
+                        messages.append(f"Line {index + 2}: {_('重复数据无法导入')}")
+                    elif len(messages) < 101:
+                        messages.append(f"......")
+                    continue
 
                 empty_field = ''
                 if not grade:
@@ -88,6 +91,8 @@ def index(request):
                         category=category,
                         fixed=fixed,
                         exam_name=exam_name,
+                        exam_times=exam_times,
+                        md5_value=md5_value,
                         released=released,
                         creator=creator
                     )
@@ -117,6 +122,7 @@ def export_to_excel(request):
                     get_question_verbose_name('classroom_exercises'): item.classroom_exercises, get_question_verbose_name('score'): item.score, \
                     get_question_verbose_name('number_of_errors'): item.number_of_errors, get_question_verbose_name('category'): item.category, \
                     get_question_verbose_name('fixed'): item.fixed, get_question_verbose_name('exam_name'): item.exam_name, \
+                    get_question_verbose_name('exam_times'): item.exam_times, get_question_verbose_name('md5_value'): item.md5_value, \
                     get_question_verbose_name('released'): item.released, get_question_verbose_name('creator'): item.creator, \
                     get_question_verbose_name('created'): item.created, get_question_verbose_name('modified'): item.modified
                 } for item in queryset
@@ -156,14 +162,18 @@ def export_to_excel(request):
         sheet.cell(row=row, column=12, value=item[list(item)[11]])
         # exam_name
         sheet.cell(row=row, column=13, value=item[list(item)[12]])
-        # released
+        # exam_times
         sheet.cell(row=row, column=14, value=item[list(item)[13]])
-        # creator
+        # md5_value
         sheet.cell(row=row, column=15, value=item[list(item)[14]])
-        # created
+        # released
         sheet.cell(row=row, column=16, value=item[list(item)[15]])
-        # modified
+        # creator
         sheet.cell(row=row, column=17, value=item[list(item)[16]])
+        # created
+        sheet.cell(row=row, column=18, value=item[list(item)[17]])
+        # modified
+        sheet.cell(row=row, column=19, value=item[list(item)[18]])
 
         # iamge
         if item[list(item)[5]]:
@@ -227,7 +237,7 @@ def generate_test_paper(request):
     run = heading.runs[0]
     font = run.font
     font.bold = True  
-    font.size = Pt(18)
+    font.size = Pt(24)
     heading.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER  # Set alignment to center
     document.add_paragraph()
     document.add_paragraph()
@@ -238,11 +248,15 @@ def generate_test_paper(request):
         run = paragraph.add_run(f"{arabic_numerals_to_chinese_numerals(index + 1)}、{item.title} ({item.score}{_('分')})")
         font = run.font
         font.name = '宋体'  # Set the font name
-        font.size = Pt(14)    # Set the font size
+        font.size = Pt(16)    # Set the font size
         font.bold = True
         font.italic = False
         if item.description_above_image:
-            document.add_paragraph(item.description_above_image)
+            paragraph = document.add_paragraph()
+            run = paragraph.add_run(item.description_above_image)
+            font = run.font
+            font.name = '宋体'  
+            font.size = Pt(14)   
         if item.image:
             # Open the image using Pillow
             image_path = '.' + item.image.url
@@ -256,15 +270,19 @@ def generate_test_paper(request):
             # pic = document.add_picture("." + item.image.url, width=Inches(5), height=Inches(3))
             # pic.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         if item.description_below_image:
-            document.add_paragraph(item.description_below_image)
+            paragraph = document.add_paragraph()
+            run = paragraph.add_run(item.description_below_image)
+            font = run.font
+            font.name = '宋体'  
+            font.size = Pt(14)  
         document.add_paragraph()
         document.add_paragraph()
         document.add_paragraph()
     
 
     # Create a response with the Word document
-    response = HttpResponse(content_type='application/msword')
-    response['Content-Disposition'] = 'attachment; filename=my_document.docx'
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response['Content-Disposition'] = 'attachment; filename=my_data_export.docx'
     document.save(response)
 
     return response

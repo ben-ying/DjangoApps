@@ -1,3 +1,5 @@
+import hashlib
+
 from django.db import models
 from django.utils.translation import gettext as _
 
@@ -27,10 +29,16 @@ class Question(models.Model):
     category = models.PositiveIntegerField(max_length=30, choices = CATEGORY_CHOICES, default=1, verbose_name=_('题目类型'), blank=True, null=True)
     fixed = models.BooleanField(default=True, verbose_name=_('是否固定题'))
     exam_name = models.CharField(max_length=100, blank=True, null=True, verbose_name=_('出自哪个试卷'))
+    exam_times = models.PositiveIntegerField(default=0, verbose_name=_('出题次数'))
+    md5_value = models.CharField(max_length=50, editable=False, verbose_name=_('MD5值'))
     released = models.BooleanField(default=False, verbose_name=_('是否发布'))
     creator = models.CharField(max_length=20, blank=True, null=True, default='ben', verbose_name=_('创建者'))
     created = models.DateField(auto_now_add=True, editable=False, verbose_name=_('创建时间'), blank=True, null=True)
     modified = models.DateField(auto_now=True, verbose_name=_('修改时间'), blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        self.md5_value = hashlib.md5((self.description_above_image + self.description_below_image).encode()).hexdigest()
+        super(Question, self).save(*args, **kwargs)
 
 
 class Exam(models.Model):
