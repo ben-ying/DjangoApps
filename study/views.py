@@ -1,7 +1,9 @@
 import base64
 import docx2txt
 import random
+import openpyxl
 import pandas as pd
+import pdb;
 
 from django.http import HttpResponse
 from django.http import HttpResponse
@@ -19,12 +21,14 @@ from openpyxl import Workbook
 from openpyxl.drawing.image import Image
 from openpyxl.styles import Alignment
 from openpyxl.styles import Font
+from openpyxl_image_loader import SheetImageLoader
 from PIL import Image as PILImage
 
 from .models import Question, Exam
-from .models import SUBJECT_CHOICES, CATEGORY_CHOICES
+from .models import SUBJECT_CHOICES, CATEGORY_CHOICES, QUESTION_IMAGE_PATH
 from .utils import get_question_verbose_name, get_choice_key_by_value, arabic_numerals_to_chinese_numerals, add_hyperlink
 
+IMAGE_COLUMN = 'F'
 
 def index(request):
     messages = []
@@ -39,13 +43,26 @@ def index(request):
         if uploaded_file.name.endswith('.xlsx'):
             df = pd.read_excel(uploaded_file, engine='openpyxl', na_filter = False)
 
+            #loading the Excel File and the sheet
+            pxl_doc = openpyxl.load_workbook(uploaded_file)
+            sheet = pxl_doc['Sheet']
+
+            #calling the image_loader
+            image_loader = SheetImageLoader(sheet)
+
             for index, row in df.iterrows():
                 id = row['id']
                 grade = row[get_question_verbose_name('grade')]
                 subject = get_choice_key_by_value(SUBJECT_CHOICES, row[get_question_verbose_name('subject')]) # value to key
                 title = row[get_question_verbose_name('title')]
                 description_above_image = row[get_question_verbose_name('description_above_image')]
-                image = row[get_question_verbose_name('image')]
+                image_path = ''
+                try:
+                    image = image_loader.get(f'{IMAGE_COLUMN}{index + 2}')
+                    image_path = f'{QUESTION_IMAGE_PATH}/{id}-{title}.png'
+                    image.save(f'media/${image_path}')
+                except Exception as e:
+                    print(f'save image failed: {e}')
                 description_below_image = row[get_question_verbose_name('description_below_image')]
                 classroom_exercises = row[get_question_verbose_name('classroom_exercises')]
                 score = row[get_question_verbose_name('number_of_errors')]
@@ -80,12 +97,12 @@ def index(request):
                     messages.append(f"Line {index + 2}: \"{get_question_verbose_name(empty_field)}\" {_('不能为空')}")
                     break
                 else:
-                    Question.objects.create(
+                    question = Question.objects.create(
                         grade=grade,
                         subject=subject,
                         title=title,
                         description_above_image=description_above_image,
-                        image=image,
+                        image=image_path,
                         description_below_image=description_below_image,
                         classroom_exercises=classroom_exercises,
                         score=score,
@@ -98,6 +115,7 @@ def index(request):
                         released=released,
                         creator=creator
                     )
+
                     if len(messages) < 10:
                         messages.append(f"Line {index + 2}: {_('数据已成功导入！')}")
                     elif len(messages) < 11:
@@ -197,7 +215,7 @@ def export_to_excel(request):
                 f.write(img_io.getvalue())
 
             img = Image(img_path)
-            sheet.add_image(img, f'F{row}') # E means column=6
+            sheet.add_image(img, f'{IMAGE_COLUMN}{row}') # F means column=6
 
     for index, row in enumerate(sheet.iter_rows()):
         # Set row height, title no need to set
@@ -210,7 +228,7 @@ def export_to_excel(request):
                 
     # Set row width
     sheet.column_dimensions['E'].width = 50 # description_above_image
-    sheet.column_dimensions['F'].width = 80 # image
+    sheet.column_dimensions[IMAGE_COLUMN].width = 80 # image
     sheet.column_dimensions['G'].width = 50 # description_above_image
     # Save the Excel file
     workbook.save('media/study/files/output.xlsx')
@@ -282,7 +300,7 @@ def generate_test_paper(request):
         font.italic = False
         if item.description_above_image:
             paragraph = document.add_paragraph()
-            run = paragraph.add_run(item.description_above_image)
+            run = paragraph.add_run(item.get_description_above_image())
             font = run.font
             font.name = '宋体'  
             font.size = Pt(14)   
@@ -300,7 +318,7 @@ def generate_test_paper(request):
             # pic.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         if item.description_below_image:
             paragraph = document.add_paragraph()
-            run = paragraph.add_run(item.description_below_image)
+            run = paragraph.add_run(item.get_description_below_image())
             font = run.font
             font.name = '宋体'  
             font.size = Pt(14)  

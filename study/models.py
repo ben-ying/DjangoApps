@@ -4,6 +4,8 @@ from django.db import models
 from django.utils.translation import gettext as _
 
 
+QUESTION_IMAGE_PATH = 'study/images'
+
 SUBJECT_CHOICES = (
         (1, _('数学')),
         (2, _('语文')),
@@ -19,15 +21,15 @@ CATEGORY_CHOICES = (
 
 class Question(models.Model):
     grade = models.PositiveSmallIntegerField(default=1, verbose_name=_('年级'))
-    subject = models.PositiveSmallIntegerField(max_length=30, choices = SUBJECT_CHOICES, default=1, verbose_name=_('学科'))
+    subject = models.PositiveSmallIntegerField(max_length=30, choices=SUBJECT_CHOICES, default=1, verbose_name=_('学科'))
     title = models.CharField(max_length=50, verbose_name=_('标题'))
     description_above_image = models.TextField(max_length=1024, blank=True, null=True, verbose_name=_('图片上方描述'))
-    image = models.ImageField(upload_to ='study/images', blank=True, null=True, verbose_name=_('图片'))
+    image = models.ImageField(upload_to=QUESTION_IMAGE_PATH, blank=True, null=True, verbose_name=_('图片'))
     description_below_image = models.TextField(max_length=1024, blank=True, null=True, verbose_name=_('图片下方描述'))
     classroom_exercises = models.BooleanField(default=True,  verbose_name=_('是否课内习题'))
     score = models.PositiveSmallIntegerField(default=1, verbose_name=_('分数'))
     number_of_errors = models.PositiveIntegerField(default=1, verbose_name=_('出错次数'))
-    category = models.PositiveIntegerField(max_length=30, choices = CATEGORY_CHOICES, default=1, verbose_name=_('题目类型'), blank=True, null=True)
+    category = models.PositiveIntegerField(max_length=30, choices=CATEGORY_CHOICES, default=1, verbose_name=_('题目类型'), blank=True, null=True)
     fixed = models.BooleanField(default=True, verbose_name=_('是否固定题'))
     exam_name = models.CharField(max_length=100, blank=True, null=True, verbose_name=_('出自哪个试卷'))
     exam_times = models.PositiveIntegerField(default=0, verbose_name=_('出题次数'))
@@ -40,15 +42,21 @@ class Question(models.Model):
 
     def save(self, *args, **kwargs):
         str2md5 = self.description_above_image + self.description_below_image
-        if self.image:
-            str2md5 += self.image.url
+        if self.answer:
+            str2md5 += self.answer
         self.md5_value = hashlib.md5((str2md5).encode()).hexdigest()
         super(Question, self).save(*args, **kwargs)
+
+    def get_description_above_image(self):
+        return self.description_above_image.replace('()', '(        )').replace('（）', '(        )')
+    
+    def get_description_below_image(self):
+        return self.description_below_image.replace('()', '(        )').replace('（）', '(        )')
 
 
 class Exam(models.Model):
     grade = models.PositiveSmallIntegerField(default=1, verbose_name=_('年级'))
-    subject = models.PositiveSmallIntegerField(max_length=30, choices = SUBJECT_CHOICES, default=1, verbose_name=_('学科'))
+    subject = models.PositiveSmallIntegerField(max_length=30, choices=SUBJECT_CHOICES, default=1, verbose_name=_('学科'))
     questions = models.ManyToManyField('Question', related_name='exam_questions', blank=True, verbose_name=_('试题'))
     wrong_questions = models.ManyToManyField('Question', related_name='exam_wrong_questions', blank=True, verbose_name=_('错题'))
     name = models.CharField(max_length=50, verbose_name=_('试卷名称'))

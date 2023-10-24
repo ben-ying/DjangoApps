@@ -40,3 +40,4 @@ openpyxl
 pandas
 python-docx
 docx2txt
+openpyxl-image-loader
