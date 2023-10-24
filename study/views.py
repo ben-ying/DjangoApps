@@ -306,13 +306,12 @@ def generate_test_paper(request):
             font.size = Pt(14)   
         if item.image:
             # Open the image using Pillow
-            image_path = '.' + item.image.url
-            image = PILImage.open(image_path)
+            image = PILImage.open(item.image)
             # Get the original width and height of the image
             original_width, original_height = image.size
             width = 6
             i = original_width / width
-            document.add_picture(image_path, width=Inches(width), height=Inches(original_height / i))
+            document.add_picture(item.image, width=Inches(width), height=Inches(original_height / i))
 
             # pic = document.add_picture("." + item.image.url, width=Inches(5), height=Inches(3))
             # pic.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
