@@ -23,7 +23,7 @@ from PIL import Image as PILImage
 
 from .models import Question, Exam
 from .models import SUBJECT_CHOICES, CATEGORY_CHOICES
-from .utils import get_question_verbose_name, get_choice_key_by_value, arabic_numerals_to_chinese_numerals
+from .utils import get_question_verbose_name, get_choice_key_by_value, arabic_numerals_to_chinese_numerals, add_hyperlink
 
 
 def index(request):
@@ -257,6 +257,12 @@ def generate_test_paper(request):
         item.save()
         # Add score
         total_score += item.score
+        # Add question link
+        paragraph = document.add_paragraph()
+        run = paragraph.add_run()
+        font = run.font
+        font.size = Pt(12)   
+        add_hyperlink(paragraph, f'({item.id})', f'http://mybackend.online:8000/admin/study/question/{item.id}/change/')
 
         paragraph = document.add_paragraph()
         run = paragraph.add_run(f"{arabic_numerals_to_chinese_numerals(index + 1)}、{item.title} ({item.score}{_('分')})")
