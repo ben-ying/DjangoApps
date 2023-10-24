@@ -104,8 +104,12 @@ def index(request):
                         messages.append(f"......")
         else:
             messages = f"_('文件格式不正确')"
+    
+    subjects = []
+    for subject in SUBJECT_CHOICES:
+        subjects.append(subject[1])
 
-    return render(request, 'index.html', {'messages': messages})
+    return render(request, 'index.html', {'messages': messages, 'subjects': subjects})
 
 
 def export_to_excel(request):
@@ -223,13 +227,18 @@ def export_to_excel(request):
 def generate_test_paper(request):
     # Fetch data from the Django model
     grade = request.GET.get('grade')
-    subject = request.GET.get('subject')
+    subject = get_choice_key_by_value(SUBJECT_CHOICES, request.GET.get('subject'))
     creator = request.GET.get('creator', 'ben')
-    items = list(Question.objects.filter(grade=grade, subject=subject))
-    size = int(request.GET.get('size')) if int(request.GET.get('size')) < len(items) else len(items)
-    
-    # random items
-    random_items = random.sample(items, size)
+    is_random = True if request.GET.get('random') == u'true' else False
+    if is_random:
+        items = list(Question.objects.filter(grade=grade, subject=subject, released=True))
+        size = int(request.GET.get('size')) if int(request.GET.get('size')) < len(items) else len(items)
+        # random items
+        selected_items = random.sample(items, size)
+    else:
+        items = Question.objects.filter(grade=grade, subject=subject, released=True).order_by('exam_times')
+        size = int(request.GET.get('size')) if int(request.GET.get('size')) < len(items) else len(items)
+        selected_items = items[:size]
 
     # Create a new Word document
     document = Document()
@@ -251,7 +260,7 @@ def generate_test_paper(request):
 
     # Add data from the model to the document
     total_score = 0
-    for index, item in enumerate(random_items):
+    for index, item in enumerate(selected_items):
         # Add item exam_times
         item.exam_times += 1
         item.save()
@@ -300,16 +309,16 @@ def generate_test_paper(request):
         document.add_paragraph()
 
     # Save exam
-    exam = Exam.objects.create(
-        grade=grade,
-        subject=subject,
-        name=name,
-        total_score=total_score,
-        creator=creator,
-    )
-    exam.questions.set(items)
-    exam.save()
-
+    if len(selected_items) > 0:
+        exam = Exam.objects.create(
+            grade=grade,
+            subject=subject,
+            name=name,
+            total_score=total_score,
+            creator=creator,
+        )
+        exam.questions.set(items)
+        exam.save()
 
     # Create a response with the Word document
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')

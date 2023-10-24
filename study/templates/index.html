@@ -1,5 +1,17 @@
 {% extends "study_base.html" %}
+{% load static %}
 {% block head %}
+<script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+
+<script>
+    function downloadExam() {
+        var size = $("#size").val();
+        var grade = $("#grade").val();
+        var subject = $("#subjects").val();
+        var random = $("#random_checkbox").prop('checked');
+        window.location.href=`generate-test-paper?size=${size}&grade=${grade}&subject=${subject}&random=${random}`
+    }
+</script>
 {% endblock %}
 {% block body %}
     <h1>从Excel导入试题</h1>
@@ -12,8 +24,20 @@
     </form><br><br>
     <h1>将数据到出到Excel</h1>
     <button onclick="window.location.href='export-to-excel'">下载数据</button><br><br><br><br>
+
     <h1>生成试卷</h1>
-    <button onclick="window.location.href='generate-test-paper?size=10&grade=1&subject=1'">下载试卷</button><br><br>
+    <label for="random_checkbox">选中表示随机生成，否则按照出题次数少排序选择: </label>
+    <input type="checkbox" id="random_checkbox" checked="true"><br><br>
+    <label for="size">题目数:</label>
+    <input id='size' type="number" min="1" max="12" value="20">
+    <label for="grade">年级:</label>
+    <input id='grade' type="number" min="1" max="100" value="1">
+    <select name="subjects" id="subjects">
+        {% for subject in subjects %}
+            <option value="{{subject}}">{{subject}}</option>
+        {% endfor %}
+      </select>
+    <button onclick="downloadExam()">下载试卷</button><br><br>
     <!-- Display a message if data was successfully imported -->
     {% for message in messages %}
         <p style="font-size: 30; color: red;">{{ message }}</p>
