@@ -128,12 +128,16 @@ def export_to_excel(request):
         subject = get_choice_key_by_value(SUBJECT_CHOICES, request.GET.get('subject'))
         queryset = queryset.filter(subject=get_choice_key_by_value(SUBJECT_CHOICES, subject))
 
-    if len(queryset) == 0:
-        return HttpResponse({_('没有数据')})
-
     # Create an Excel workbook
     workbook = Workbook()
     sheet = workbook.active
+
+    if len(queryset) == 0:
+        workbook.save('media/study/files/output.xlsx')
+        response = HttpResponse(content_type="application/ms-excel")
+        response["Content-Disposition"] = "attachment; filename=study_questions.xlsx"
+        workbook.save(response)
+        return response
 
     # Prepare data (as a list of dictionaries)
     data = [
