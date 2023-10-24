@@ -42,7 +42,7 @@ def add_hyperlink(paragraph, text, url):
     new_run.text = text
 
     # Set the run's style to the builtin hyperlink style, defining it if necessary
-    new_run.style = get_or_create_hyperlink_style(part.document)
+    new_run.style = _get_or_create_hyperlink_style(part.document)
     # Alternatively, set the run's formatting explicitly
     # new_run.font.color.rgb = docx.shared.RGBColor(0, 0, 255)
     # new_run.font.underline = True
@@ -53,14 +53,7 @@ def add_hyperlink(paragraph, text, url):
     return hyperlink
 
 
-def get_or_create_hyperlink_style(d):
-    """If this document had no hyperlinks so far, the builtin
-       Hyperlink style will likely be missing and we need to add it.
-       There's no predefined value, different Word versions
-       define it differently.
-       This version is how Word 2019 defines it in the
-       default theme, excluding a theme reference.
-    """
+def _get_or_create_hyperlink_style(d):
     if "Hyperlink" not in d.styles:
         if "Default Character Font" not in d.styles:
             ds = d.styles.add_style("Default Character Font",
