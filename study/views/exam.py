@@ -19,6 +19,8 @@ def generate_test_paper(request):
     # Fetch data from the Django model
     grade = request.GET.get('grade')
     subject = get_choice_key_by_value(SUBJECT_CHOICES, request.GET.get('subject'))
+    print('subject: ' + request.GET.get('subject'))
+    print('subject: ' + str(subject))
     creator = request.GET.get('creator', 'ben')
     is_random = True if request.GET.get('random') == u'true' else False
     if is_random:

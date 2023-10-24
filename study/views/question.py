@@ -116,7 +116,18 @@ def upload_excel(request):
 
 
 def export_to_excel(request):
-    queryset = Question.objects.all()
+    grade = request.GET.get('grade')
+    subject = request.GET.get('subject')
+    
+    if grade != '0':
+        queryset = Question.objects.filter(grade=grade)
+    else:
+        queryset = Question.objects.all()
+
+    if subject != 'All':
+        subject = get_choice_key_by_value(SUBJECT_CHOICES, request.GET.get('subject'))
+        queryset = queryset.filter(subject=get_choice_key_by_value(SUBJECT_CHOICES, subject))
+
     if len(queryset) == 0:
         return HttpResponse({_('没有数据')})
 

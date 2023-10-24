@@ -5,11 +5,17 @@
 
 <script>
     function downloadExam() {
-        var size = $("#size").val();
-        var grade = $("#grade").val();
-        var subject = $("#subjects").val();
+        var size = $("#exam_size").val();
+        var grade = $("#exam_grade").val();
+        var subject = $("#exam_subjects").val();
         var random = $("#random_checkbox").prop('checked');
         window.location.href=`generate-test-paper?size=${size}&grade=${grade}&subject=${subject}&random=${random}`
+    }
+
+    function exportQuestion() {
+        var grade = $("#question_grade").val();
+        var subject = $("#question_subjects").val();
+        window.location.href=`export-to-excel?grade=${grade}&subject=${subject}`
     }
 </script>
 {% endblock %}
@@ -23,20 +29,28 @@
         <input type="submit" value="上传文件">
     </form><br><br>
     <h1>将数据到出到Excel</h1>
-    <button onclick="window.location.href='export-to-excel'">下载数据</button><br><br><br><br>
+    <label for="question_grade">年级(0表示所有年级):</label>
+    <input id='question_grade' type="number" min="0" max="100" value="0">
+    <select name="question_subjects" id="question_subjects">
+        <option value="All">所有科目</option>
+        {% for subject in subjects %}
+            <option value="{{subject}}">{{subject}}</option>
+        {% endfor %}
+    </select>
+    <button onclick="exportQuestion()">下载数据</button><br><br><br><br>
 
     <h1>生成试卷</h1>
     <label for="random_checkbox">选中表示随机生成，否则按照出题次数少排序选择: </label>
     <input type="checkbox" id="random_checkbox" checked="true"><br><br>
-    <label for="size">题目数:</label>
-    <input id='size' type="number" min="1" max="12" value="20">
-    <label for="grade">年级:</label>
-    <input id='grade' type="number" min="1" max="100" value="1">
-    <select name="subjects" id="subjects">
+    <label for="exam_size">题目数:</label>
+    <input id='exam_size' type="number" min="1" max="12" value="20">
+    <label for="exam_grade">年级:</label>
+    <input id='exam_grade' type="number" min="1" max="100" value="1">
+    <select name="exam_subjects" id="exam_subjects">
         {% for subject in subjects %}
             <option value="{{subject}}">{{subject}}</option>
         {% endfor %}
-      </select>
+    </select>
     <button onclick="downloadExam()">下载试卷</button><br><br>
     <!-- Display a message if data was successfully imported -->
     {% for message in messages %}
