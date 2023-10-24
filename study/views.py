@@ -219,6 +219,7 @@ def generate_test_paper(request):
     # Fetch data from the Django model
     grade = request.GET.get('grade')
     subject = request.GET.get('subject')
+    creator = request.GET.get('creator', 'ben')
     items = list(Question.objects.filter(grade=grade, subject=subject))
     size = int(request.GET.get('size')) if int(request.GET.get('size')) < len(items) else len(items)
     
@@ -231,9 +232,10 @@ def generate_test_paper(request):
 
     # Add a title to the document
     # import pdb; pdb.set_trace()
-    heading = document.add_heading(arabic_numerals_to_chinese_numerals(grade) + \
-                                   _('年级') + SUBJECT_CHOICES[int(subject) - 1][1] + _('试题') + \
-                                    arabic_numerals_to_chinese_numerals(len(exams) + 1), 1)
+    name = arabic_numerals_to_chinese_numerals(grade) + \
+                _('年级') + SUBJECT_CHOICES[int(subject) - 1][1] + _('试题') + \
+                arabic_numerals_to_chinese_numerals(len(exams) + 1)
+    heading = document.add_heading(name, 1)
     run = heading.runs[0]
     font = run.font
     font.bold = True  
@@ -243,7 +245,14 @@ def generate_test_paper(request):
     document.add_paragraph()
 
     # Add data from the model to the document
+    total_score = 0
     for index, item in enumerate(random_items):
+        # Add item exam_times
+        item.exam_times += 1
+        item.save()
+        # Add score
+        total_score += item.score
+
         paragraph = document.add_paragraph()
         run = paragraph.add_run(f"{arabic_numerals_to_chinese_numerals(index + 1)}、{item.title} ({item.score}{_('分')})")
         font = run.font
@@ -278,7 +287,18 @@ def generate_test_paper(request):
         document.add_paragraph()
         document.add_paragraph()
         document.add_paragraph()
-    
+
+    # Save exam
+    exam = Exam.objects.create(
+        grade=grade,
+        subject=subject,
+        name=name,
+        total_score=total_score,
+        creator=creator,
+    )
+    exam.questions.set(items)
+    exam.save()
+
 
     # Create a response with the Word document
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
