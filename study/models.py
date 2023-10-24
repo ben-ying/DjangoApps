@@ -3,6 +3,7 @@ import hashlib
 from django.db import models
 from django.utils.translation import gettext as _
 
+
 SUBJECT_CHOICES = (
         (1, _('数学')),
         (2, _('语文')),
@@ -31,14 +32,17 @@ class Question(models.Model):
     exam_name = models.CharField(max_length=100, blank=True, null=True, verbose_name=_('出自哪个试卷'))
     exam_times = models.PositiveIntegerField(default=0, verbose_name=_('出题次数'))
     md5_value = models.CharField(max_length=50, editable=False, verbose_name=_('MD5值'))
-    answer = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_('答案&解题思路'))
+    answer = models.TextField(max_length=1024, blank=True, null=True, verbose_name=_('答案&解题思路'))
     released = models.BooleanField(default=False, verbose_name=_('是否发布'))
     creator = models.CharField(max_length=20, blank=True, null=True, default='ben', verbose_name=_('创建者'))
     created = models.DateField(auto_now_add=True, editable=False, verbose_name=_('创建时间'), blank=True, null=True)
     modified = models.DateField(auto_now=True, verbose_name=_('修改时间'), blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        self.md5_value = hashlib.md5((self.description_above_image + self.description_below_image).encode()).hexdigest()
+        str2md5 = self.description_above_image + self.description_below_image
+        if self.image:
+            str2md5 += self.image.url
+        self.md5_value = hashlib.md5((str2md5).encode()).hexdigest()
         super(Question, self).save(*args, **kwargs)
 
 
@@ -51,8 +55,22 @@ class Exam(models.Model):
     total_score = models.PositiveSmallIntegerField(default=100, verbose_name=_('总分'))
     creator = models.CharField(max_length=20, blank=True, null=True, default='ben', verbose_name=_('创建者'))
     score = models.PositiveSmallIntegerField(default=0, verbose_name=_('分数'))
+    answers = models.TextField(max_length=4096, blank=True, null=True, verbose_name=_('试题答案'))
     reviewer = models.CharField(max_length=20, blank=True, null=True, default='ben', verbose_name=_('批改人'))
     created = models.DateField(auto_now_add=True, editable=False, verbose_name=_('创建时间'), blank=True, null=True) 
     modified = models.DateField(auto_now=True, verbose_name=_('修改时间'), blank=True, null=True)
 
+    def save(self, *args, **kwargs):
+        super(Exam, self).save(*args, **kwargs)
+        answers = ''
+        for index, q in enumerate(self.questions.all()):
+            if q.answer:
+                answers += f'{(index + 1)}: {q.answer}\n'
+            else:
+                answers += f'{(index + 1)}: /\n'
+        
+        # Add condition to solve error: maximum recursion depth exceeded while calling a Python object
+        if self.answers != answers:
+            self.answers = answers
+            self.save()
 
