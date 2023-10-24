@@ -31,6 +31,7 @@ class Question(models.Model):
     exam_name = models.CharField(max_length=100, blank=True, null=True, verbose_name=_('出自哪个试卷'))
     exam_times = models.PositiveIntegerField(default=0, verbose_name=_('出题次数'))
     md5_value = models.CharField(max_length=50, editable=False, verbose_name=_('MD5值'))
+    answer = models.CharField(max_length=1024, blank=True, null=True, verbose_name=_('答案&解题思路'))
     released = models.BooleanField(default=False, verbose_name=_('是否发布'))
     creator = models.CharField(max_length=20, blank=True, null=True, default='ben', verbose_name=_('创建者'))
     created = models.DateField(auto_now_add=True, editable=False, verbose_name=_('创建时间'), blank=True, null=True)

@@ -54,6 +54,7 @@ def index(request):
                 exam_name = row[get_question_verbose_name('exam_name')]
                 exam_times = row[get_question_verbose_name('exam_times')]
                 md5_value = row[get_question_verbose_name('md5_value')]
+                answer = row[get_question_verbose_name('answer')]
                 released = row[get_question_verbose_name('released')]
                 creator = row[get_question_verbose_name('creator')]
 
@@ -93,6 +94,7 @@ def index(request):
                         exam_name=exam_name,
                         exam_times=exam_times,
                         md5_value=md5_value,
+                        answer=answer,
                         released=released,
                         creator=creator
                     )
@@ -123,6 +125,7 @@ def export_to_excel(request):
                     get_question_verbose_name('number_of_errors'): item.number_of_errors, get_question_verbose_name('category'): item.category, \
                     get_question_verbose_name('fixed'): item.fixed, get_question_verbose_name('exam_name'): item.exam_name, \
                     get_question_verbose_name('exam_times'): item.exam_times, get_question_verbose_name('md5_value'): item.md5_value, \
+                    get_question_verbose_name('answer'): item.answer, \
                     get_question_verbose_name('released'): item.released, get_question_verbose_name('creator'): item.creator, \
                     get_question_verbose_name('created'): item.created, get_question_verbose_name('modified'): item.modified
                 } for item in queryset
@@ -166,14 +169,16 @@ def export_to_excel(request):
         sheet.cell(row=row, column=14, value=item[list(item)[13]])
         # md5_value
         sheet.cell(row=row, column=15, value=item[list(item)[14]])
-        # released
+        # answer
         sheet.cell(row=row, column=16, value=item[list(item)[15]])
-        # creator
+        # released
         sheet.cell(row=row, column=17, value=item[list(item)[16]])
-        # created
+        # creator
         sheet.cell(row=row, column=18, value=item[list(item)[17]])
-        # modified
+        # created
         sheet.cell(row=row, column=19, value=item[list(item)[18]])
+        # modified
+        sheet.cell(row=row, column=20, value=item[list(item)[19]])
 
         # iamge
         if item[list(item)[5]]:
@@ -195,7 +200,7 @@ def export_to_excel(request):
         if index != 0:
             sheet.row_dimensions[index + 1].height = 180
         else:
-            sheet.row_dimensions[index + 1].height = 30
+            sheet.row_dimensions[index + 1].height = 60
         for cell in row:
             cell.alignment = Alignment(wrap_text=True, vertical='center', horizontal='center')
                 
