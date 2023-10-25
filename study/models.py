@@ -5,6 +5,7 @@ from django.utils.translation import gettext as _
 
 
 QUESTION_IMAGE_PATH = 'study/images'
+EXAM_FILE_PATH = 'study/files'
 
 SUBJECT_CHOICES = (
         (1, _('数学')),
@@ -64,7 +65,8 @@ class Exam(models.Model):
     creator = models.CharField(max_length=20, blank=True, null=True, default='ben', verbose_name=_('创建者'))
     score = models.PositiveSmallIntegerField(default=0, verbose_name=_('分数'))
     answers = models.TextField(max_length=4096, blank=True, null=True, verbose_name=_('试题答案'))
-    reviewer = models.CharField(max_length=20, blank=True, null=True, default='ben', verbose_name=_('批改人'))
+    reviewer = models.CharField(max_length=20, blank=True, null=True, default='', verbose_name=_('批改人'))
+    document = models.FileField(upload_to=EXAM_FILE_PATH, blank=True, null=True, verbose_name=_('试题'))
     created = models.DateField(auto_now_add=True, editable=False, verbose_name=_('创建时间'), blank=True, null=True) 
     modified = models.DateField(auto_now=True, verbose_name=_('修改时间'), blank=True, null=True)
 

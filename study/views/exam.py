@@ -1,13 +1,16 @@
 import random
 
+from django.core.files.base import ContentFile
 from django.http import HttpResponse
 from django.http import HttpResponse
 from django.utils.translation import gettext as _
 
+from datetime import date
 from docx import Document
 from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Inches
+from io import BytesIO
 from PIL import Image as PILImage
 
 from ..models import Question, Exam
@@ -100,8 +103,17 @@ def generate_test_paper(request):
         document.add_paragraph()
         document.add_paragraph()
 
+    today = date.today()
+    doc_name = f'{today}_{name}.docx'
+
     # Save exam
     if len(selected_items) > 0:
+         # Save the document to a BytesIO object
+        buffer = BytesIO()
+        document.save(buffer)
+        content = ContentFile(buffer.getvalue())
+        buffer.close()
+
         exam = Exam.objects.create(
             grade=grade,
             subject=subject,
@@ -110,11 +122,12 @@ def generate_test_paper(request):
             creator=creator,
         )
         exam.questions.set(items)
+        exam.document.save(doc_name, content, save=True)
         exam.save()
 
     # Create a response with the Word document
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-    response['Content-Disposition'] = 'attachment; filename=my_data_export.docx'
+    response['Content-Disposition'] = 'attachment; filename=exam.docx'
     document.save(response)
 
     return response

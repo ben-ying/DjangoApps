@@ -10,6 +10,6 @@ admin.site.register(Question, QuestionAdmin)
 
 
 class ExamAdmin(admin.ModelAdmin):
-    list_display = ('id', 'grade', 'subject', 'score', 'total_score', 'answers', 'created', 'modified')
+    list_display = ('id', 'grade', 'subject', 'score', 'total_score', 'answers', 'document', 'created', 'modified')
     search_fields = ('score', 'total_score', 'creator', 'reviewer')
 admin.site.register(Exam, ExamAdmin)
