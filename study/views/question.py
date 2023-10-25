@@ -3,6 +3,7 @@ import pandas as pd
 
 from django.http import HttpResponse
 from django.utils.translation import gettext as _
+from django.views.generic.list import ListView
 
 from io import BytesIO
 from openpyxl import Workbook
@@ -18,6 +19,11 @@ from ..utils import get_question_verbose_name, get_choice_key_by_value
 
 
 IMAGE_COLUMN = 'F'
+
+class QuesetionListView(ListView):
+    template_name = 'questions.html'
+    model = Question
+    
 
 def upload_excel(request):
     messages = []

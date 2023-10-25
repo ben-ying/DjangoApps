@@ -1,0 +1,80 @@
+{% extends "study_base.html" %}
+{% load static %}
+{% block head %}
+<style type="text/css">
+    .question_text {
+        max-width:150px;
+        margin: 10px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .content_page {
+        padding-left: 30px; 
+        padding-right: 30px; 
+        padding-top: 10px; 
+        padding-bottom: 10px;
+    }
+
+    table {
+        border-spacing: 15px;
+    }
+
+    th, td {
+        text-align: center;
+    }
+</style>
+{% endblock %}
+{% block body %}
+{% block table %}
+<div class="content_page">
+    <h1>试题列表</h1>
+
+    <table width="100%">
+        <tr>
+            <th>ID</th>
+            <th>年级</th>
+            <th>学科</th>
+            <th>标题</th>
+            <th>图片上方描述</th>
+            <th>图片</th>
+            <th>图片下方描述</th>
+            <th>是否课内习题</th>
+            <th>分数</th>
+            <th>出错次数</th>
+            <th>题目类型</th>
+            <th>是否固定题</th>
+            <th>出自哪个试卷</th>
+            <th>出题次数</th>
+            <th>答案&解题思路</th>
+            <th>是否发布</th>
+            <th>创建者</th>
+        </tr>
+        {% for question in object_list %}
+        <tr>
+            <td class="question_text">{{question.id}}</td>
+            <td class="question_text">{{question.grade}}</td>
+            <td class="question_text">{{question.subject}}</td>
+            <td class="question_text">{{question.title}}</td>
+            <td class="question_text">{{question.description_above_image}}</td>
+            <td>{{question.image}}</td>
+            <td class="question_text">{{question.description_below_image}}</td>
+            <td class="question_text">{{question.classroom_exercises}}</td>
+            <td class="question_text">{{question.score}}</td>
+            <td class="question_text">{{question.number_of_errors}}</td>
+            <td class="question_text">{{question.category}}</td>
+            <td class="question_text">{{question.fixed}}</td>
+            <td class="question_text">{{question.exam_name}}</td>
+            <td class="question_text">{{question.exam_times}}</td>
+            <td class="question_text">{{question.answer}}</td>
+            <td class="question_text">{{question.released}}</td>
+            <td class="question_text">{{question.creator}}</td>
+        </tr>
+        {% endfor %}
+        </tr>
+    </table>
+</div>
+{% endblock %}
+{% endblock %}
+

@@ -8,4 +8,6 @@ urlpatterns = [
     path("", home.index, name="index"),
     path('export-to-excel/', question.export_to_excel, name='export-to-excel'),
     path('generate-test-paper/', exam.generate_test_paper, name='generate-test-paper'),
+    path('questions/', question.QuesetionListView.as_view(), name='question-list'),
+    path('exams/', exam.ExamListView.as_view(), name='exam-list'),
 ]

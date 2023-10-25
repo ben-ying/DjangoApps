@@ -1,0 +1,70 @@
+{% extends "study_base.html" %}
+{% load static %}
+{% block head %}
+<style type="text/css">
+    .question_text {
+        max-width:150px;
+        margin: 10px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .content_page {
+        padding-left: 30px; 
+        padding-right: 30px; 
+        padding-top: 10px; 
+        padding-bottom: 10px;
+    }
+
+    table {
+        border-spacing: 15px;
+    }
+
+    th, td {
+        text-align: center;
+    }
+</style>
+{% endblock %}
+{% block body %}
+{% block table %}
+<div class="content_page">
+    <h1>试卷列表</h1>
+
+    <table width="100%">
+        <tr>
+            <th>ID</th>
+            <th>年级</th>
+            <th>学科</th>
+            <th>试题</th>
+            <th>错题</th>
+            <th>试卷名称</th>
+            <th>总分</th>
+            <th>创建者</th>
+            <th>分数</th>
+            <th>试题答案</th>
+            <th>批改人</th>
+            <th>试卷文档</th>
+        </tr>
+        {% for exam in object_list %}
+        <tr>
+            <td class="question_text">{{exam.id}}</td>
+            <td class="question_text">{{exam.grade}}</td>
+            <td class="question_text">{{exam.subject}}</td>
+            <td class="question_text">{{exam.questions}}</td>
+            <td class="question_text">{{exam.wrong_questions}}</td>
+            <td class="question_text">{{exam.name}}</td>
+            <td class="question_text">{{exam.total_score}}</td>
+            <td class="question_text">{{exam.creator}}</td>
+            <td class="question_text">{{exam.score}}</td>
+            <td class="question_text">{{exam.answers}}</td>
+            <td class="question_text">{{exam.reviewer}}</td>
+            <td class="question_text">{{exam.document}}</td>
+        </tr>
+        {% endfor %}
+        </tr>
+    </table>
+</div>
+{% endblock %}
+{% endblock %}
+

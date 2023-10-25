@@ -4,6 +4,7 @@ from django.core.files.base import ContentFile
 from django.http import HttpResponse
 from django.http import HttpResponse
 from django.utils.translation import gettext as _
+from django.views.generic.list import ListView
 
 from datetime import date
 from docx import Document
@@ -16,6 +17,11 @@ from PIL import Image as PILImage
 from ..models import Question, Exam
 from ..models import SUBJECT_CHOICES
 from ..utils import get_choice_key_by_value, arabic_numerals_to_chinese_numerals, add_hyperlink
+
+
+class ExamListView(ListView):
+    template_name = 'exams.html'
+    model = Exam
 
 
 def generate_test_paper(request):
